@@ -1,0 +1,3 @@
+SQLALCHEMY_DATABASE_URI=sqlite:///imagedb.db
+UPLOAD_FOLDER=uploads/
+DEBUG=True

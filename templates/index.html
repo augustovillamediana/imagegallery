@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Gallery</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Image gallery</h1>
+        <nav>
+            <form id="upload-form" onsubmit="upload(event)" enctype="multipart/form-data">
+                <input type="file" id="file" required>
+                <button type="submit">Upload</button>
+            </form>
+        </nav>
+    </header>
+    <main id="content">
+        <div id="image-gallery">
+            <!-- Images will be displayed here -->
+        </div>
+    </main>
+
+    <!-- The Modal -->
+    <div id="myModal" class="modal">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <img class="modal-content" id="img01">
+        <div id="caption"></div>
+    </div>
+
+    <script>
+        function upload(event) {
+            event.preventDefault();
+            const file = document.getElementById('file').files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                loadImages();
+            })
+            .catch(error => console.error('Error uploading file:', error));
+        }
+
+        function loadImages() {
+            fetch('/images')
+            .then(response => response.json())
+            .then(data => {
+                const gallery = document.getElementById('image-gallery');
+                gallery.innerHTML = '';
+                data.images.forEach(image => {
+                    const img = document.createElement('img');
+                    img.src = `/uploads/${image.file_path.split('/').pop()}`;
+                    img.alt = image.file_path.split('/').pop();
+                    img.onclick = function() { openModal(this); };
+                    gallery.appendChild(img);
+                });
+            });
+        }
+
+        // Function to open the modal
+        function openModal(img) {
+            const modal = document.getElementById('myModal');
+            const modalImg = document.getElementById('img01');
+            const captionText = document.getElementById('caption');
+            modal.style.display = 'block';
+            modalImg.src = img.src;
+            captionText.innerHTML = img.alt;
+        }
+
+        // Function to close the modal
+        function closeModal() {
+            const modal = document.getElementById('myModal');
+            modal.style.display = 'none';
+        }
+
+        // Load images on page load
+        window.onload = loadImages;
+    </script>
+</body>
+</html>
